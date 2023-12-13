@@ -55,7 +55,7 @@ class OpenCLCodeGenerator : public ELFCodeGenerator<hw>
 public:
     explicit OpenCLCodeGenerator(Product product_)  : ELFCodeGenerator<hw>(product_) {}
     explicit OpenCLCodeGenerator(int stepping_ = 0) : ELFCodeGenerator<hw>(stepping_) {}
-
+    bool binaryIsZebin() { return isZebin; }
     inline std::vector<uint8_t> getBinary(cl_context context, cl_device_id device, const std::string &options = "-cl-std=CL2.0");
     inline cl_kernel getKernel(cl_context context, cl_device_id device, const std::string &options = "-cl-std=CL2.0");
     static inline HW detectHW(cl_context context, cl_device_id device);
@@ -65,6 +65,7 @@ public:
     static inline void detectHWInfo(cl_context context, cl_device_id device, HW &outHW, int &outStepping);
 
 private:
+    bool isZebin = false;
     inline std::vector<uint8_t> getPatchTokenBinary(cl_context context, cl_device_id device, const std::vector<uint8_t> *code = nullptr, const std::string &options = "-cl-std=CL2.0");
 };
 
@@ -162,7 +163,7 @@ std::vector<uint8_t> OpenCLCodeGenerator<hw>::getBinary(cl_context context, cl_d
 
     for (bool defaultFormat : {true, false}) {
         bool legacy = defaultFormat ^ zebinFirst;
-
+        isZebin = !legacy;
         if (legacy) {
             try {
                 return getPatchTokenBinary(context, device, &code, options);
